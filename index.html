@@ -28,7 +28,7 @@
 
 <section data-background-image="pics/Amsterdam.jpg">
 	<h1>Low Latency Programming</h1>
-	<div>Maciej Gajewski, Optiver</div>
+	<div>Walther Zwart, Optiver</div>
 	<img src="pics/optiver_logo_white.png" style="border:none; background:none"/>
 </section>
 
@@ -47,14 +47,32 @@
 <section data-background-image="pics/Amsterdam.jpg">
 	<h3>About me</h3>
 	<ul>
-		<li>M.Sc in Robotics from Wrocław University of Technology</li>
-		<li>30 years of programming</li>
-		<li>20 years of C++</li>
-		<li>4 years at Optiver</li>
+		<li>Masters Applied Physics UTwente</li>
+		<li>30+ years of programming</li>
+		<li>20+ years of C++
+			<ul>
+				<li>LOFAR</li>
+				<li>JCMT</li>
+			</ul>
+		</li>
+		<li>4+ years at Optiver</li>
 	</ul>
-	<div  class="stretch">
-		<img src="pics/Maciek.jpg"/>
+	<div class="stretch">
+		<img src="pics/Walther.png"/>
+		<img src="pics/lofar.jpg"/>
+		<img src="pics/jcmt.jpeg"/>
 	</div>
+</section>
+
+<section>
+	<h3>About Optiver</h3>
+	<ul>
+		<li>Market Making</li>
+		<li>Provide prices</li>
+		<li>Improve the market</li>
+		<li>Calculate the correct price</li>
+		<li>Being faster than the competition</li>
+	</ul>
 </section>
 
 <section>
@@ -84,19 +102,16 @@
 		<li>No kernel config option</li>
 		<li>No library</li>
 	</ul>
-
 </section>
 
 <section>
 	<h3>...but there are golden rules</h3>
 	<ul>
 		<li>Measure</li>
-		<li>Measure</li>
-		<li>Measure</li>
 		<li>Do not optimize prematurely</li>
-		<li>Know your hardware</li>
+		<li>Know your problem</li>
 		<li>Know your libraries</li>
-		<li>Know your application</li>
+		<li>Know your hardware</li>
 	</ul>
 </section>
 
@@ -124,17 +139,6 @@
 </section>
 
 <section>
-	<h3>Google Benchmark</h3>
-	<ul>
-		<li>Allows for easy creation of microbenchmarks</li>
-		<li><a href="https://github.com/google/benchmark">https://github.com/google/benchmark</a></li>
-	</ul>
-	<div>
-		<img src="pics/tool.png"/>
-	</div>
-</section>
-
-<section>
 	<h3>Today's excercise</h3>
 	<pre><code class="cpp">
 class Dictionary
@@ -149,13 +153,24 @@ public:
 
 <section>
 	<h3>Google Benchmark</h3>
+	<ul>
+		<li>Allows for easy creation of microbenchmarks</li>
+		<li><a href="https://github.com/google/benchmark">https://github.com/google/benchmark</a></li>
+	</ul>
+	<div>
+		<img src="pics/tool.png"/>
+	</div>
+</section>
+
+<section>
+	<h3>Google Benchmark</h3>
 	<pre><code class="cpp">
 void InDictionary(benchmark::State& state)
 {
 	int idx = 0;
 	Dictionary dict(words);
 
-	for(auto _ : state)
+	for (auto _: state)
 	{
 		std::string_view word = words[idx];
 		idx = (idx+1) % words.size();
@@ -173,10 +188,10 @@ void NotInDictionary(benchmark::State& state)
 	int idx = 0;
 	Dictionary dict(words);
 
-	for(auto _ : state)
+	for (auto _: state)
 	{
 		std::string_view word = unknown_words[idx];
-		idx = (idx+1) % words.size();
+		idx = (idx+1) % unknown_words.size();
 		benchmark::DoNotOptimize(dict.in_dictionary(word));
 	}
 }
@@ -207,11 +222,6 @@ Benchmark                                Time           CPU Iterations
 </section>
 
 <section>
-	<h1>Step 2</h1>
-	<h3>Algorithmic complexity</h3>
-</section>
-
-<section>
 	<h3>Naive implementation</h3>
 	<pre class="stretch"><code class="cpp">
 class Dictionary
@@ -231,6 +241,25 @@ private:
 	std::set&lt;std::string&gt; _container;
 };
 	</code></pre>
+</section>
+
+<section>
+	<h1>Step 2</h1>
+	<h3>Algorithmic complexity</h3>
+	<!-- start kcachegrind and show number of compares -->
+</section>
+
+<section>
+	<h3>Valgrind</h3>
+	<ul>
+		<li>Instrumentation framework</li>
+		<li>Unix only</li>
+		<li>Callgrind - profiler</li>
+		<li>KCachegrind - GUI</li>
+	</ul>
+	<div>
+		<img src="pics/tool.png"/>
+	</div>
 </section>
 
 <section data-transition="none">
@@ -289,19 +318,6 @@ private:
 <section>
 	<h1>Step 3</h1>
 	<h3>Allocations</h3>
-</section>
-
-<section>
-	<h3>Valgrind</h3>
-	<ul>
-		<li>Instrumentation framework</li>
-		<li>Unix only</li>
-		<li>Callgrind - profiler</li>
-		<li>KCachegrind - GUI</li>
-	</ul>
-	<div>
-		<img src="pics/tool.png"/>
-	</div>
 </section>
 
 <section>
@@ -644,9 +660,10 @@ private:
 	<ul>
 		<li>Always measure</li>
 		<li>Keep an eye on algorithmic complexity</li>
-		<li>Avoid allocations</li>
+		<li>Avoid allocations / synchronization</li>
 		<li>Use cache efficiently</li>
 		<li>Look into generated assembly</li>
+		<!-- Last three are where low level languages work best -->
 	</ul>
 </section>
 
@@ -654,14 +671,13 @@ private:
 <section>
 	<h3>The last slide</h3>
 	<ul>
-		<li>https://github.com/maciekgajewski/LowLatencyProgrammingPresentation</li>
 		<li>“When a Microsecond Is an Eternity", Carl Cook, CppCon 2017</li>
-		<li>"What every programmer should know about memory", Ulrich Drepper, 2007</li>
 		<li>Papi++ : https://github.com/david-grs/papipp</li>
 		<li>Google Benchmark</li>
 		<li>Valgrind, Callgrind, KCachegrind</li>
 		<li>perf</li>
-		<li><b><a href="http://hr.gs/cambridge">http://hr.gs/cambridge</a></b></li>
+		<li><b><a href="http://www.optiver.com">http://www.optiver.com</a></b></li>
+	</ul>
 </section>
 
 
