@@ -1,5 +1,5 @@
-# Low Latency Programmin
+# Low Latency Programming
 
-This is a presentation-version of Low Latency Programing workshop, available here: https://github.com/maciekgajewski/LowLatencyWorkshop
+This is a presentation-version of Low Latency Programming workshop, available here: https://github.com/wahez/LowLatencyWorkshop
 
-See this presentation online: https://maciekgajewski.github.io/LowLatencyProgrammingPresentation/
+See this presentation online: https://wahez.github.io/LowLatencyProgrammingPresentation/
