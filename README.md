@@ -1,5 +1,6 @@
 # Low Latency Programming
 
-This is a presentation-version of Low Latency Programming workshop, available here: https://github.com/wahez/LowLatencyWorkshop
+This is a presentation-version of Low Latency Programming workshop, available here: https://github.com/david-grs/talk-lowlatencycpp
 
-See this presentation online: https://wahez.github.io/LowLatencyProgrammingPresentation/
+[http://david-grs.github.io/low_latency_presentation/](See this presentation online)
+
