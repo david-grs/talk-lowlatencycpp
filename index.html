@@ -28,12 +28,14 @@
 
 <section data-background-image="pics/Amsterdam.jpg">
 	<h1>Low Latency Programming</h1>
-	<div>David Gross, Optiver</div>
+	<div>David Gross</div>
+	<div>Walther Zwart</div>
+	<div>Optiver</div>
 	<img src="pics/optiver_logo_white.png" style="border:none; background:none"/>
 </section>
 
 <section data-background-image="pics/Amsterdam.jpg">
-	<h3>About me</h3>
+	<h3>About David</h3>
 	<ul>
 		<li>MSc Computer Science UTC (France)</li>
 		<li>15+ years of programming</li>
@@ -41,15 +43,22 @@
 		<li>4+ years at Optiver</li>
 		<li><a href="https://github.com/david-grs">https://github.com/david-grs</a></li>
 	</ul>
-	<div class="stretch">
-		<img src="pics/David.jpg"/>
-	</div>
 </section>
 
 <section data-background-image="pics/Amsterdam.jpg">
-	<h3>About this talk</h3>
+	<h3>About Walther</h3>
 	<ul>
-		<li>Based on a Low Latency Workshop</li>
+		<li>MSc Applied Physics</li>
+		<li>30+ years of programming</li>
+		<li>20+ years of C++
+		<li>5+ years at Optiver</li>
+		<li><a href="https://github.com/wahez">https://github.com/wahez</a></li>
+	</ul>
+</section>
+
+<section data-background-image="pics/Amsterdam.jpg">
+	<h3>About this workshop</h3>
+	<ul>
 		<li>Process of improving latency</li>
 		<li>Some useful tools &mdash; mostly Linux</li>
 		<li>Actual C++ code</li>
@@ -129,430 +138,48 @@
 </section>
 
 <section>
-	<h1>Step 1</h1>
+	<h1>Steps</h1>
 	<h3>Identify the hot path</h3>
-</section>
-
-<section>
-	<h3>Identify the hot path</h3>
-	<ul>
-		<li>Profilers don't work for events</li>
-		<li>Know which code is "hot"</li>
-		<li>Microbenchmark the hot code</li>
-	</ul>
-</section>
-
-<section>
-	<h3>Today's excercise</h3>
-	<pre><code class="cpp">
-class Dictionary
-{
-public:
-	Dictionary(const std::vector&lt;std::string&gt;& words);
-
-	bool in_dictionary(std::string_view word) const;
-};
-	</code></pre>
-</section>
-
-<section>
-	<h3>Google Benchmark</h3>
-	<ul>
-		<li>Allows for easy creation of microbenchmarks</li>
-		<li><a href="https://github.com/google/benchmark">https://github.com/google/benchmark</a></li>
-	</ul>
-	<div>
-		<img src="pics/tool.png"/>
-	</div>
-</section>
-
-<section>
-	<h3>Google Benchmark</h3>
-	<pre><code class="cpp">
-void InDictionary(benchmark::State& state)
-{
-	int idx = 0;
-	Dictionary dict(words);
-
-	for (auto _: state)
-	{
-		std::string_view word = words[idx];
-		idx = (idx+1) % words.size();
-		benchmark::DoNotOptimize(dict.in_dictionary(word));
-	}
-}
-	</code></pre>
-</section>
-
-<section>
-	<h3>Google Benchmark</h3>
-	<pre><code class="cpp">
-void NotInDictionary(benchmark::State& state)
-{
-	int idx = 0;
-	Dictionary dict(words);
-
-	for (auto _: state)
-	{
-		std::string_view word = unknown_words[idx];
-		idx = (idx+1) % unknown_words.size();
-		benchmark::DoNotOptimize(dict.in_dictionary(word));
-	}
-}
-	</code></pre>
-</section>
-
-<section>
-	<h3>Google Benchmark</h3>
-	<pre><code class="cpp">
-BENCHMARK(InDictionary);
-BENCHMARK(NotInDictionary);
-BENCHMARK_MAIN();
-	</code></pre>
-</section>
-
-
-<section>
-	<h3>Google Benchmark</h3>
-	<pre>
-Run on (4 X 3504 MHz CPU s)
-2018-01-17 14:19:55
------------------------------------------------------------------------
-Benchmark                                Time           CPU Iterations
------------------------------------------------------------------------
-<span style="color:green">InDictionary</span>                           <span style="color:yellow">725 ns        725 ns</span>     <span style="color:cyan">884585</span>
-<span style="color:green">NotInDictionary</span>                        <span style="color:yellow">812 ns        811 ns</span>     <span style="color:cyan">838950</span>
-</pre>
-</section>
-
-<section>
-	<h3>Naive implementation</h3>
-	<pre class="stretch"><code class="cpp">
-class Dictionary
-{
-public:
-	Dictionary(const std::vector&lt;std::string&gt;& words)
-		: _container(words.begin(), words.end())
-	{}
-
-
-	bool in_dictionary(std::string_view word) const
-	{
-		return _container.find({word.data(), word.size()}) != _container.end();
-	}
-
-private:
-	std::set&lt;std::string&gt; _container;
-};
-	</code></pre>
-</section>
-
-<section>
-	<h1>Step 2</h1>
 	<h3>Algorithmic complexity</h3>
-	<!-- start kcachegrind and show number of compares -->
-</section>
-
-<section>
-	<h3>Valgrind &amp; Callgrind</h3>
-	<ul>
-		<li>Instrumentation framework</li>
-		<li>Unix only</li>
-		<li>Callgrind - profiler</li>
-		<li>KCachegrind - GUI</li>
-	</ul>
-	<div>
-		<img src="pics/tool.png"/>
-	</div>
-</section>
-
-<section>
-	<h3>Valgrind &amp; Callgrind</h3>
-	<pre><code class="bash">$ valgrind --tool=callgrind ./benchmark 
-$ kcachegrind 
-</code></pre>
-</section>
-
-<section>
-	<h3>KCachegrind</h3>
-	<pre><code class="bash">$ valgrind --tool=callgrind ./benchmark 
-$ kcachegrind 
-</code></pre>
-	<div>
-		<img src="pics/kcachegrind.png"/>
-		<!-- 85k iterations -->
-	</div>
-</section>
-
-<section data-transition="none">
-	<h3>Naive implementation</h3>
-	<pre class="stretch"><code class="cpp">
-class Dictionary
-{
-public:
-	Dictionary(const std::vector&lt;std::string&gt;& words)
-		: _container(words.begin(), words.end())
-	{}
-
-
-	bool in_dictionary(std::string_view word) const
-	{
-		return _container.find({word.data(), word.size()}) != _container.end();
-	}
-
-private:
-	std::set&lt;std::string&gt; _container;
-};
-	</code></pre>
-</section>
-
-<section data-transition="none">
-	<h3>Improved implementation</h3>
-	<pre class="stretch"><code class="cpp">
-class Dictionary
-{
-public:
-	Dictionary(const std::vector&lt;std::string&gt;& words)
-		: _container(words.begin(), words.end())
-	{}
-
-
-	bool in_dictionary(std::string_view word) const
-	{
-		return _container.find({word.data(), word.size()}) != _container.end();
-	}
-
-private:
-	std::unordered_set&lt;std::string&gt; _container; // <-- O(1)
-};
-	</code></pre>
-</section>
-
-<section>
-	<h3>Benchmark: Improving algorithmic complexity</h3>
-	<canvas data-chart="bar" height="100%">
-		Benchmark, InDictionary, NotInDictionary
-		set, 771, 867
-		unordered_set, 178, 193
-	</canvas>
-</section>
-
-<section>
-	<h1>Step 3</h1>
 	<h3>Allocations</h3>
-</section>
-
-<section>
-	<h3>KCachegrind output</h3>
-	<div class="stretch">
-		<img src="pics/callgrind-v1.png"/>
-	</div>
-</section>
-
-<section>
-	<h3>KCachegrind output</h3>
-	<div class="stretch">
-		<img src="pics/callgrind-v1-cropped.png"/>
-	</div>
-</section>
-
-<section data-transition="none">
-	<h3>Improved implementation</h3>
-	<pre class="stretch"><code class="cpp">
-class Dictionary
-{
-public:
-	Dictionary(const std::vector&lt;std::string&gt;& words)
-		: _container(words.begin(), words.end())
-	{}
-
-
-	bool in_dictionary(std::string_view word) const
-	{
-		// This line allocates, creating std::string from std::string_view
-		return _container.find({word.data(), word.size()}) != _container.end();
-	}
-
-private:
-	std::unordered_set&lt;std::string&gt; _container; // Stores std::string
-};
-	</code></pre>
-</section>
-
-<section data-transition="none">
-	<h3>Non-allocating implementation</h3>
-	<pre class="stretch"><code class="cpp">
-class Dictionary
-{
-public:
-	Dictionary(const std::vector&lt;std::string&gt;& words)
-		: _data(words.begin(), words.end())
-		, _index(_data.begin(), _data.end())
-	{}
-
-
-	bool in_dictionary(std::string_view word) const
-	{
-		return _index.find(word) != _index.end(); // No allocation!
-	}
-
-private:
-	std::vector&lt;std::string&gt; _data; // Stores std::string
-	std::unordered_set&lt;std::string_view&gt; _index; // Stores views
-};
-	</code></pre>
-</section>
-
-<section>
-	<h3>KCachegrind output</h3>
-	<div class="stretch">
-		<img src="pics/callgrind-v2.png"/>
-	</div>
-</section>
-
-<section>
-	<h3>Benchmark: Removing allocations</h3>
-	<canvas data-chart="bar" height="100%">
-		Benchmark, InDictionary, NotInDictionary
-		set, 771, 867
-		unordered_set, 178, 193
-		no alloc, 108, 116
-	</canvas>
-</section>
-
-<section>
-	<h1>Step 4</h1>
 	<h3>Cache coherence</h3>
+	<h3>CPU instructions</h3>
 </section>
 
 <section>
-	<h3>std::unordered_set</h3>
-	<div class="stretch">
-		<img src="pics/chaining.png"/>
-	</div>
+	<h1>Tools</h1>
+    <ol>
+        <li>Google Benchmark</li>
+        <li>Valgrind, callgrind &amp; kcachegrind</li>
+        <li>Papi++</li>
+        <li>Perf</li>
+    </ol>
 </section>
 
 <section>
-	<h3>std::unordered_set</h3>
-	<div class="stretch">
-		<img src="pics/chaining-lookup.png"/>
-	</div>
+	<h3>Google Benchmark</h3>
+    <ul>
+        <li>Allows for easy creation of microbenchmarks</li>
+        <li><a href="https://github.com/google/benchmark">https://github.com/google/benchmark</a></li>
+    </ul>
 </section>
 
 <section>
-	<h3>Open addressing</h3>
-	<div class="stretch">
-		<img src="pics/closed-hashing.png"/>
-	</div>
+	<h3>Valgrind, callgrind &amp; kcachegrind</h3>
+    <ul>
+        <li>Instrumentation framework</li>
+        <li>Unix only</li>
+        <li>Callgrind - profiler</li>
+        <li>KCachegrind - GUI</li>
+    </ul>
 </section>
 
 <section>
 	<h3>Papi++</h3>
-	<ul>
-		<li>Provides access to Hardware Performance Counters from within the program</li>
-		<li><a href="https://github.com/david-grs/papipp"> https://github.com/david-grs/papipp</a></li>
-	</ul>
-	<div>
-		<img src="pics/tool.png"/>
-	</div>
-</section>
-
-
-<section>
-	<h3>Papi - example use</h3>
-	<pre><code class="cpp">
-	papi::event_set&lt;PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, PAPI_L1_DCM&gt events;
-	events.start_counters();
-
-	// Micro-benchmark loop is here
-
-	events.stop_counters();
-	std::cout
-		<< events.get&lt;PAPI_L1_DCM&gt().counter() / state.iterations()
-		<< " L1 cache misses";
-	</code></pre>
-</section>
-
-<section>
-	<h3>Papi - output</h3>
-	<pre>
-98 L1 cache misses
-16 L1 cache misses
-7.89 L1 cache misses
-6.617 L1 cache misses
-6.3805 L1 cache misses
-6.03766 L1 cache misses
-6.03299 L1 cache misses
-6.03683 L1 cache misses
-	</pre>
-</section>
-
-<section>
-	<h3>Open addressing implementation</h3>
-	<pre><code class="cpp">
-	struct Entry
-	{
-		std::size_t hash;
-		const std::string* string = nullptr;
-	};
-
-	std::vector&lt;Entry&gt; hashTable_;
-	</code></pre>
-</section>
-
-<section>
-	<h3>Open addressing implementation</h3>
-	<pre class="stretch"><code class="cpp">
-	bool in_dictionary(std::string_view word) const
-	{
-		auto hash = std::hash&lt;std::string_view&gt;()(word);
-		auto idx = hash % hashTable_.size();
-
-		while (true)
-		{
-			const Entry& entry = hashTable_[idx];
-
-			// detect bucket
-			if (!entry.string)
-				return false;
-
-			// detect match
-			if(entry.hash == hash && *entry.string == word)
-				return true;
-
-			// probe
-			idx = (idx + 1) % hashTable_.size();
-		}
-	}
-	</code></pre>
-</section>
-
-<section>
-	<h3>PAPI++: Cache misses</h3>
-	<canvas data-chart="bar" height="100%">
-		Hashmap, Cache misses
-		Chaining, 6.03683
-		Open addressing, 3.9278
-	</canvas>
-</section>
-
-<section>
-	<h3>Benchmark: Open addressing</h3>
-	<canvas data-chart="bar" height="100%">
-		Benchmark, InDictionary, NotInDictionary
-		set, 771, 867
-		unordered_set, 178, 193
-		no alloc, 108, 116
-		open addr, 74, 74
-	</canvas>
-</section>
-
-
-
-
-<section>
-	<h1>Step 5</h1>
-	<h3>CPU instructions</h3>
+    <ul>
+        <li>Provides access to Hardware Performance Counters from within the program</li>
+        <li><a href="https://github.com/david-grs/papipp"> https://github.com/david-grs/papipp</a></li>
+    </ul>
 </section>
 
 <section>
@@ -564,117 +191,6 @@ private:
 		<li>Produces nice reports</li>
 		<li>And so much more!</li>
 	</ul>
-	<div>
-		<img src="pics/tool.png"/>
-	</div>
-</section>
-
-
-<section>
-	<h3>Perf report</h3>
-	<pre>
-  0,12 │       mov    %edx,0x8(%rsp)
-       │       mov    $0xc70f6907,%edx
-  0,16 │     → callq  std::_Hash_bytes(void const*, unsigned long, unsigned long)@plt
-       │                     auto idx = hash % hashTable_.size();
-       │       xor    %edx,%edx
-  0,12 │       mov    %rax,%r14
-<span style="color:red"/> 18,01 │       div    %rbx</span>
-       │           const_reference operator[](size_type __n) const _GLIBCXX_NOEXCEPT
-       │           { return *(this->_M_impl._M_start + __n); }
-  0,08 │       mov    %rdx,%rax
-       │       mov    %rdx,%r12
-  0,47 │       shl    $0x4,%rax
-  0,27 │       add    %r15,%rax
-       │                             if (!entry.string)
-<span style="color:red"/> 35,52 │       mov    0x8(%rax),%rdx</span>
-  0,12 │       mov    %rax,%rcx
-       │       test   %rdx,%rdx
-  0,47 │     ↓ jne    1a4
-       │     ↓ jmpq   230
-       │       nop
-       │                             idx = (idx+1) % hashTable_.size();
-  3,06 │180:   lea    0x1(%r12),%rax
-       │       xor    %edx,%edx
-<span style="color:red"/>  5,89 │       div    %rbx</span>
-       │       mov    %rdx,%rcx
-       │       mov    %rdx,%r12
- 	</pre>
-</section>
-
-<section>
-	<h3>Finding offending code</h3>
-	<pre class="stretch"><code class="cpp">
-	bool in_dictionary(std::string_view word) const
-	{
-		auto hash = std::hash&lt;std::string_view&gt;()(word);
-		auto idx = hash % hashTable_.size(); // <-- Flagged by perf
-
-		while (true)
-		{
-			const Entry& entry = hashTable_[idx];
-
-			// detect bucket
-			if (!entry.string)
-				return false;
-
-			// detect match
-			if(entry.hash == hash && *entry.string == word)
-				return true;
-
-			// probe
-			idx = (idx + 1) % hashTable_.size(); // <-- Flagged by perf
-		}
-	}
-	</code></pre>
-</section>
-
-<section>
-	<h3>Fixing offending code</h3>
-	<pre class="stretch"><code class="cpp">
-	bool in_dictionary(std::string_view word) const
-	{
-		auto hash = std::hash&lt;std::string_view&gt;()(word);
-		auto idx = hash & (hashTable_.size() - 1); // Fixed?
-
-		while (true)
-		{
-			const Entry& entry = hashTable_[idx];
-
-			// detect bucket
-			if (!entry.string)
-				return false;
-
-			// detect match
-			if(entry.hash == hash && *entry.string == word)
-				return true;
-
-			// probe
-			idx = (idx + 1) & (hashTable_.size() - 1); // Fixed?
-		}
-	}
-	</code></pre>
-</section>
-
-<section>
-	<h3>PAPI++: Instructions per cycle</h3>
-	<canvas data-chart="bar" height="100%">
-		Implementation, Instructions per cycle
-		DIV, 0.62
-		AND, 0.80
-	</canvas>
-</section>
-
-<section>
-	<h3>Benchmark: Removing DIV</h3>
-	<canvas data-chart="bar" height="100%">
-		Benchmark, InDictionary, NotInDictionary
-		set, 771, 867
-		unordered_set, 178, 193
-		no alloc, 108, 116
-		open addr, 74, 74
-		no div, 53, 53
-	</canvas>
 </section>
 
 <section>
@@ -703,12 +219,9 @@ private:
 </section>
 
 <section>
-	<img src="pics/Low-latency-Masterclass-iPad.png" style="border:none; background:none"/>
+	<img src="pics/hiring.png" style="border:none; background:none; width:60%"/>
 </section>
 
-<section data-background-image="pics/Amsterdam.jpg">
-	<h1>Questions?</h1>
-</section>
 			</div>
 		</div>
 
